@@ -1,0 +1,7 @@
+jvm.memory.used 512 mb NORMAL
+http.requests 1200 count NORMAL
+http.errors 45 count WARNING
+cpu.usage 82 percent WARNING
+db.query.time 340 ms NORMAL
+jvm.gc.pause 1200 ms CRITICAL
+test фдыалво ms NORMAL

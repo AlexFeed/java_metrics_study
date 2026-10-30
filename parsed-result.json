@@ -1,0 +1,42 @@
+{
+  "variant" : "Метрики приложения",
+  "totalLines" : 700,
+  "validLines" : 6,
+  "invalidLines" : 1,
+  "records" : [ {
+    "value" : 512.0,
+    "unit" : "mb",
+    "level" : "NORMAL",
+    "metricName" : "jvm.memory.used"
+  }, {
+    "value" : 1200.0,
+    "unit" : "count",
+    "level" : "NORMAL",
+    "metricName" : "http.requests"
+  }, {
+    "value" : 45.0,
+    "unit" : "count",
+    "level" : "WARNING",
+    "metricName" : "http.errors"
+  }, {
+    "value" : 82.0,
+    "unit" : "percent",
+    "level" : "WARNING",
+    "metricName" : "cpu.usage"
+  }, {
+    "value" : 340.0,
+    "unit" : "ms",
+    "level" : "NORMAL",
+    "metricName" : "db.query.time"
+  }, {
+    "value" : 1200.0,
+    "unit" : "ms",
+    "level" : "CRITICAL",
+    "metricName" : "jvm.gc.pause"
+  } ],
+  "invalidRecords" : [ {
+    "lineNumber" : 7,
+    "line" : "test фдыалво ms NORMAL",
+    "reason" : "Значение метрики не является числом: 'фдыалво'"
+  } ]
+}
