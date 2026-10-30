@@ -43,7 +43,8 @@ public class StrategyScanner {
 
         // Запуск сканирования пакета
         try (ScanResult scanResult = new ClassGraph()
-                .enableAllInfo()
+                .enableClassInfo()
+                .enableAnnotationInfo()
                 .acceptPackages(packageToScan)
                 .scan()) {
 

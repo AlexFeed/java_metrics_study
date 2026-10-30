@@ -1,7 +1,7 @@
 package test.facade;
 
+import test.analysis.Analyzer;
 import test.analysis.MetricAnalysisResult;
-import test.analysis.MetricAnalyzer;
 import test.model.InvalidLine;
 import test.model.MetricRecord;
 import test.model.ParsedResult;
@@ -21,7 +21,16 @@ public class MetricAnalysisFacade {
     private final JsonResultWriter jsonWriter = new JsonResultWriter();
     private final JsonResultReader jsonReader = new JsonResultReader();
 
-    public void runParseMode(InputStream inputStream, String jsonPath, String reportPath) {
+    /**
+     * Основной режим парсинга и анализа с передачей выбранных стратегий
+     */
+    public void runParseMode(
+            InputStream inputStream,
+            String jsonPath,
+            String reportPath,
+            Analyzer<MetricRecord, MetricAnalysisResult> analyzer,
+            ReportBuilder<MetricAnalysisResult> reportBuilder) {
+
         List<MetricRecord> validRecords = new ArrayList<>();
         List<InvalidLine> invalidLines = new ArrayList<>();
         int lineNumber = 0;
@@ -44,7 +53,7 @@ public class MetricAnalysisFacade {
             }
         }
 
-//      Создание объекта результата парсинга для json сериализации
+        // 1. Создание и запись JSON с исходными данными и ошибочными строками
         ParsedResult parsedResult = new ParsedResult(
                 "Метрики приложения",
                 lineNumber,
@@ -53,37 +62,49 @@ public class MetricAnalysisFacade {
                 validRecords,
                 invalidLines
         );
-
-//      Запись объекта в json
         jsonWriter.writeToFile(parsedResult, jsonPath);
 
-        MetricAnalysisResult result = MetricAnalyzer.analyze(validRecords);
+        // 2. Выполнение расчёта через переданную стратегию анализа
+        MetricAnalysisResult result = analyzer.analyze(validRecords);
 
-//      Сериализация готового отчета
+        // 3. Фасад устанавливает контекст ошибок парсинга
+        result.setParseContext(lineNumber, validRecords.size(), invalidLines);
+
+        // 4. Сериализация готового отчета
         JavaReportSerializer.serialize(result, reportPath);
 
-        String report = ReportBuilder.build(result);
+        // 5. Построение отчёта через переданную стратегию отчёта
+        String report = reportBuilder.build(result);
 
+        // 6. Вывод в консоль
         System.out.println(report);
     }
 
-    public void runShowReportMode(String filePath) {
+    /**
+     * Режим отображения сохранённого ранее отчёта
+     */
+    public void runShowReportMode(
+            String filePath,
+            ReportBuilder<MetricAnalysisResult> reportBuilder,
+            Analyzer<MetricRecord, MetricAnalysisResult> fallbackAnalyzer) {
+
         MetricAnalysisResult result;
 
         if (filePath.toLowerCase().endsWith(".json")) {
-            // Читаем JSON и заново считаем статистику
+            // Читаем JSON и пересчитываем статистику
             ParsedResult parsedResult = jsonReader.readFromFile(filePath);
-            result = MetricAnalyzer.analyze(
+            result = fallbackAnalyzer.analyze(parsedResult.getRecords());
+            result.setParseContext(
                     parsedResult.getTotalLines(),
-                    parsedResult.getRecords(),
+                    parsedResult.getValidLines(),
                     parsedResult.getInvalidRecords()
             );
         } else {
-            // Читаем бинарный сериализованный объект
+            // Читаем готовый бинарный сериализованный объект
             result = JavaReportSerializer.deserialize(filePath);
         }
 
-        String report = ReportBuilder.build(result);
+        String report = reportBuilder.build(result);
         System.out.println(report);
     }
 }

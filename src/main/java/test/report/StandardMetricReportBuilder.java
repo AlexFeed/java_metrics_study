@@ -9,7 +9,7 @@ import java.util.Locale;
 import java.util.Map;
 
 @StrategyComponent(
-        name = "basic",
+        name = "standard",
         group = "metrics",
         type = StrategyType.REPORT
 )
